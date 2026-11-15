@@ -65,6 +65,11 @@ function TwoFactorSetupStep({
     const { resolvedAppearance } = useAppearance();
     const [copiedText, copy] = useClipboard();
     const IconComponent = copiedText === manualSetupKey ? Check : Copy;
+    // Render the server-generated QR SVG through an <img> data URI, so the
+    // markup is parsed as an image and cannot execute scripts.
+    const qrCodeSrc = qrCodeSvg
+        ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrCodeSvg)}`
+        : null;
 
     return (
         <>
@@ -75,12 +80,11 @@ function TwoFactorSetupStep({
                     <div className="mx-auto flex max-w-md overflow-hidden">
                         <div className="mx-auto aspect-square w-64 rounded-lg border border-border">
                             <div className="z-10 flex h-full w-full items-center justify-center p-5">
-                                {qrCodeSvg ? (
-                                    <div
-                                        className="aspect-square w-full rounded-lg bg-white p-2 [&_svg]:size-full"
-                                        dangerouslySetInnerHTML={{
-                                            __html: qrCodeSvg,
-                                        }}
+                                {qrCodeSrc ? (
+                                    <img
+                                        src={qrCodeSrc}
+                                        alt="QR code for setting up two-factor authentication"
+                                        className="aspect-square w-full rounded-lg bg-white p-2"
                                         style={{
                                             filter:
                                                 resolvedAppearance === 'dark'
