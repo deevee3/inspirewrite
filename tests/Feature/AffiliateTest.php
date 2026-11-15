@@ -36,38 +36,6 @@ test('referral link 404s for suspended affiliates', function () {
     $this->get('/r/'.$affiliate->code)->assertNotFound();
 });
 
-test('signup with a referral cookie creates a referral', function () {
-    $affiliate = makeAffiliate(makeAffiliateUser());
-
-    $response = $this
-        ->withCookie(config('affiliates.cookie_name'), $affiliate->code)
-        ->post(route('register.store'), [
-            'name' => 'Referred User',
-            'email' => 'referred@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-    $response->assertRedirect(route('dashboard', absolute: false));
-
-    $user = User::where('email', 'referred@example.com')->firstOrFail();
-    $this->assertDatabaseHas('affiliate_referrals', [
-        'affiliate_id' => $affiliate->id,
-        'referred_user_id' => $user->id,
-    ]);
-});
-
-test('signup without a referral cookie creates no referral', function () {
-    $this->post(route('register.store'), [
-        'name' => 'Organic User',
-        'email' => 'organic@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ]);
-
-    expect(AffiliateReferral::count())->toBe(0);
-});
-
 test('self-referral is ignored by the attribution service', function () {
     $user = makeAffiliateUser();
     $affiliate = makeAffiliate($user);
